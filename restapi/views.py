@@ -1,11 +1,14 @@
 from django.shortcuts import render
 
-from django.http import Http404, HttpResponse, JsonResponse
-from django.contrib.auth import authenticate
+from django.http import HttpResponse, JsonResponse, Http404
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+
+from . import models
 
 import re
 from datetime import datetime, timedelta
@@ -16,14 +19,26 @@ from .serializers import UserSerializer, UserSigninSerializer
 # Create your views here.
 
 
-@api_view(["GET"])
 def login(request):
-    return HttpResponse("Hello, world.")
-
+    if request.method == "GET":
+        form = AuthenticationForm()
+        return render(request, 'restapi/login.html', {'form': form})
+    else:
+        username = request.POST["username"]
+        password = request.POST["password"]
+        signin_serializer = UserSigninSerializer(data={"username": username, "password": password})
+        if not signin_serializer.is_valid():
+            return HttpResponse(signin_serializer.errors, status=400)
+        return HttpResponse(username)
 
 @api_view(["GET"])
 def check(request):
-    return HttpResponse("Hello, world.")
+    return render(request, 'restapi/form.html')
+
+
+@api_view(["GET"])
+def check_result(request):
+    return render(request, 'restapi/check.html', {"tojson": {}, "folder": "", "file": ""})
 
 
 @api_view(["GET"])
@@ -39,6 +54,20 @@ def rbds(request):
 @api_view(["GET"])
 def report(request):
     return HttpResponse("Hello, world.")
+
+
+@api_view(["POST"])
+def upload(request):
+    file = request.POST.get("file", None)
+    run = request.POST.get("run", None)
+    otp = request.POST.get("otp", None)
+    rbd = request.POST.get("rbd", None)
+    if not (file is None and run is None and otp is None and rbd is None):
+        print(file)
+        print(run)
+        print(otp)
+        print(rbd)
+
 
 
 @api_view(["POST"])

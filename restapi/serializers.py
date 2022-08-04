@@ -1,5 +1,6 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from rest_framework import serializers
+from restapi.models import User
 
 
 class UserSigninSerializer(serializers.Serializer):
@@ -10,4 +11,4 @@ class UserSigninSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username']
