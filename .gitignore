@@ -31,3 +31,4 @@ MANIFEST
 
 #exclude *.pyc files
 *.pyc
+/.idea/
