@@ -11,7 +11,7 @@ from django.http import HttpResponse
 
 import pyotp
 from django.conf import settings
-
+from django.core.files.storage import FileSystemStorage
 
 def loginOTP(run_, otp_):
     now_ = datetime.now(timezone('Chile/Continental'))
@@ -35,11 +35,13 @@ class RouteCommand:
         time = datetime.now(timezone('Chile/Continental'))
         self.t_stamp = str(int(datetime.timestamp(time)))
         print(f"time: {time}, timeStamp: {self.t_stamp}")
-        self.pathRootDirectory = f'/app/{self.t_stamp}_tmpdirectory'
+        self.pathRootDirectory = f'{settings.BASE_DIR}\\{self.t_stamp}_tmpdirectory'
+        print(self.pathRootDirectory)
         if not os.path.exists(self.pathRootDirectory):
             os.makedirs(self.pathRootDirectory)
-        os.system(f"cp /app/jsonDataResult.json {self.pathRootDirectory}/jsonDataResult.json")
-        _request = request
+            print("dir maked")
+        os.system(f'cp "{settings.BASE_DIR}/static/jsonDataResult.json" "{self.pathRootDirectory}/jsonDataResult.json"')
+        self._request = request
 
     def firmar_reporte(self):
         totp = pyotp.TOTP('JJCVGVKTKRCUCTKB')
@@ -54,6 +56,7 @@ class RouteCommand:
     def verifyOTP(self):
         self.now_ = datetime.now(timezone('Chile/Continental'))
         self.dt_ = self.now_.strftime('%Y-%m-%dT%H:%M:%S%Z:00')
+        return True # TODO: Testear después el verifyOTP
         tmz_ = int(datetime.timestamp(self.now_))
         print(f"OTP: {self.otp_},RUN: {self.run_}, NOW: {self.now_}, TZ: {tmz_}, t_:{self.dt_}")
 
@@ -69,30 +72,38 @@ class RouteCommand:
         return True
 
     def init_enviroment(self):
-        os.system(f"cp -a {settings.APP_CODE}/. {self.pathRootDirectory}")
+        os.system(f'cp -a "{settings.APP_CODE}/." {self.pathRootDirectory}')
         self.path_exec_file = f"{self.pathRootDirectory}/parseCSVtoEDE.py"
         print(f"Archivo parseCSVtoEDE.py copiado en: {self.path_exec_file}")
 
     def validarFormulario(self):
         try:
-            self.file = self._request.files.get('file', None)
-            if (not self.allowed_file(self.file.filename)): raise "extention not permited"
-            self.otp_ = self._request.form.get('otp', None)
-            rut_ = self._request.form.get('run', None)
+            print("validando")
+            self.file = self._request.FILES.get('file', None)
+            print(f"file done, {self.file.name}")
+            if not self.allowed_file(self.file.name):
+                print("extention not permited")
+                raise "extention not permited"
+            self.otp_ = self._request.POST.get('otp', None)
+            print("otp done")
+            rut_ = self._request.POST.get('run', None)
             if "-" not in rut_:
                 rut_ = rut_.strip()[:-1] + "-" + rut_[-1]
             self.run_ = rut_
-            self.rbd_ = self._request.form.get('rbd', None)
-            # print(self.file, self.otp_, self.run_, self.rbd_)
+            print("rut done")
+            self.rbd_ = self._request.POST.get('rbd', None)
+            print(self.file, self.otp_, self.run_, self.rbd_)
             if (self.file and self.otp_ and self.run_ and self.rbd_): return True
             raise "Faltan parametros"
         except:
             return False
 
     def extractAll(self, file):
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.name)
         fullPath_file = os.path.join(self.pathRootDirectory, filename + 'source.zip')
-        file.save(fullPath_file)
+        fs = FileSystemStorage(location=self.pathRootDirectory)
+        fs.save(filename+'source.zip', file)
+        #file.save(fullPath_file)
 
         with ZipFile(fullPath_file, 'r') as zip_ref:
             zip_ref.extractall(self.pathRootDirectory)
@@ -105,24 +116,25 @@ class RouteCommand:
     def getCheckCommand(self):
         print("Check command")
         dbFile = [f for f in sorted(os.listdir(self.pathRootDirectory)) if (str(f))[-15:] == "_encryptedD3.db"]
-        dbPath = [self.pathRootDirectory + '/' + str(f) for f in dbFile]
+        dbPath = [os.path.join(self.pathRootDirectory, str(f)) for f in dbFile]
         encriptFile = [f for f in sorted(os.listdir(self.pathRootDirectory)) if (str(f))[-14:] == "_key.encrypted"]
-        encriptPath = [self.pathRootDirectory + '/' + str(f) for f in encriptFile]
+        encriptPath = [os.path.join(self.pathRootDirectory, str(f)) for f in encriptFile]
         print(f"encriptPath: {encriptPath}")
         print(f"dbPath: {dbPath}")
-        if (encriptPath and dbPath):
-            os.system(
-                f"openssl rsautl -oaep -decrypt -inkey /app/claveprivada.pem -in {encriptPath[0]} -out {self.pathRootDirectory}/{self.t_stamp}_key.txt")
-            if (os.path.exists(f"{self.pathRootDirectory}/{self.t_stamp}_key.txt")):
+        if encriptPath and dbPath:
+            openssl_cmd = f'openssl rsautl -oaep -decrypt -inkey "{os.path.join(settings.BASE_DIR, "claveprivada.pem")}" -in "{encriptPath[0]}" -out "{os.path.join(self.pathRootDirectory, self.t_stamp)}_key.txt"'
+            print(openssl_cmd)
+            os.system(openssl_cmd)
+            if os.path.exists(f"{os.path.join(self.pathRootDirectory, self.t_stamp)}_key.txt"):
                 with open(f"{self.pathRootDirectory}/{self.t_stamp}_key.txt", "r") as myfile:
                     frase_secreta = myfile.readlines()
                 print(f"frase_secreta: {frase_secreta}")
                 if (frase_secreta):
-                    self.cmd = f"python3 {self.path_exec_file} check --json {frase_secreta[0]} {dbPath[0]}"
+                    self.cmd = f"python {self.path_exec_file} check --json {frase_secreta[0]} {dbPath[0]}"
                 else:
                     self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
         else:
-            self.cmd = f"python3 {self.path_exec_file} check --help"
+            self.cmd = f"python {self.path_exec_file} check --help"
         return self.cmd
 
     def execute(self, cmd, cwd):

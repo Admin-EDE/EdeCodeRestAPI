@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 from . import models
+from . import otp_model
 
 import re
 from datetime import datetime, timedelta
@@ -58,7 +59,7 @@ def report(request):
 
 @api_view(["POST"])
 def upload(request):
-    file = request.POST.get("file", None)
+    file = request.FILES.get("file", None)
     run = request.POST.get("run", None)
     otp = request.POST.get("otp", None)
     rbd = request.POST.get("rbd", None)
@@ -67,7 +68,27 @@ def upload(request):
         print(run)
         print(otp)
         print(rbd)
-
+        rCmd = otp_model.RouteCommand(request)  # set session
+        print("a validar formulario")
+        if (not rCmd.validarFormulario()):
+            print("error al validar el formulario")
+            raise Http404("Error al validar el formulario")  # Check form data
+        print("a init enviroment")
+        rCmd.init_enviroment()  # Crea ambiente de trabajo
+        print("a extraer")
+        rCmd.extractAll(rCmd.file)  # extract file from form
+        if not rCmd.verifyOTP():
+            return Http404(
+                "El 'verificador de identidad' ingresado no es correcto!")  # Chequea verificador de Identidad del form
+        print("a firmar reporte")
+        rCmd.firmar_reporte()  # Genera la firma del reporte
+        print("check reporte")
+        cmd = rCmd.getCheckCommand()
+        print(cmd)
+        if rCmd.cmd == "NO_SE_PUDO_REALIZAR_DESENCRIPTACION":
+            return Http404(
+                u"No se pudo desencriptar el archivo. Recuerde usar: parseCSVtoEDE.py insert -e admin@ede.mineduc.cl")
+        return HttpResponse(rCmd.__str__())
 
 
 @api_view(["POST"])

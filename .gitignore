@@ -7,6 +7,9 @@ venv/
 **/Thumbs.db
 **/thumbs.db
 
+*_tmpdirectory/
+claveprivada.pem
+
 db.sqlite3
 
 # Distribution / packaging
