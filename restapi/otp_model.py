@@ -20,6 +20,7 @@ def loginOTP(run_, otp_):
     print(f"OTP: {otp_},RUN: {run_}, NOW: {now_}, TZ: {tmz_}, t_:{dt_}")
 
     url = settings.OTP_SERVICE
+    print(url)
     headers = {'Content-Type': 'application/json', 'x-api-key': settings.X_API_KEY}
     payload = [{"RUT": run_, "OTP": otp_, "TIMESTAMP": dt_}]
     req = requests.post(url, headers=headers, json=payload)
@@ -31,7 +32,7 @@ def loginOTP(run_, otp_):
 
 
 class RouteCommand:
-    def __init__(self, request):
+    def __init__(self):
         time = datetime.now(timezone('Chile/Continental'))
         self.t_stamp = str(int(datetime.timestamp(time)))
         print(f"time: {time}, timeStamp: {self.t_stamp}")
@@ -41,7 +42,7 @@ class RouteCommand:
             os.makedirs(self.pathRootDirectory)
             print("dir maked")
         os.system(f'cp "{settings.BASE_DIR}/static/jsonDataResult.json" "{self.pathRootDirectory}/jsonDataResult.json"')
-        self._request = request
+        self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
 
     def firmar_reporte(self):
         totp = pyotp.TOTP('JJCVGVKTKRCUCTKB')
@@ -62,7 +63,7 @@ class RouteCommand:
 
         url = settings.OTP_SERVICE
         headers = {'Content-Type': 'application/json', 'x-api-key': settings.X_API_KEY}
-        payload = [{"RUT": self.run_, "OTP": self.otp_, "TIMESTAMP": self.dt_}]
+        payload = [{"RUT": self.run_, "OTP": self.otp_, "DateWithTimeZone": self.dt_}]
         req = requests.post(url, headers=headers, json=payload)
         print(f"Request result: {req.status_code}, {req.json()}, {req.reason}")
         r_ = req.json()
@@ -72,26 +73,27 @@ class RouteCommand:
         return True
 
     def init_enviroment(self):
-        os.system(f'cp -a "{settings.APP_CODE}/." {self.pathRootDirectory}')
+        #os.system(f'cp -a "{settings.APP_CODE}/." {self.pathRootDirectory}')
         self.path_exec_file = f"{self.pathRootDirectory}/parseCSVtoEDE.py"
+        self.path_exec_file = f"parseCSVtoEDE.py"
         print(f"Archivo parseCSVtoEDE.py copiado en: {self.path_exec_file}")
 
-    def validarFormulario(self):
+    def validarFormulario(self, file, otp, run, rbd):
         try:
             print("validando")
-            self.file = self._request.FILES.get('file', None)
+            self.file = file
             print(f"file done, {self.file.name}")
             if not self.allowed_file(self.file.name):
                 print("extention not permited")
                 raise "extention not permited"
-            self.otp_ = self._request.POST.get('otp', None)
+            self.otp_ = otp
             print("otp done")
-            rut_ = self._request.POST.get('run', None)
+            rut_ = run
             if "-" not in rut_:
                 rut_ = rut_.strip()[:-1] + "-" + rut_[-1]
             self.run_ = rut_
             print("rut done")
-            self.rbd_ = self._request.POST.get('rbd', None)
+            self.rbd_ = rbd
             print(self.file, self.otp_, self.run_, self.rbd_)
             if (self.file and self.otp_ and self.run_ and self.rbd_): return True
             raise "Faltan parametros"
@@ -130,17 +132,19 @@ class RouteCommand:
                     frase_secreta = myfile.readlines()
                 print(f"frase_secreta: {frase_secreta}")
                 if (frase_secreta):
-                    self.cmd = f"python {self.path_exec_file} check --json {frase_secreta[0]} {dbPath[0]}"
+                    self.cmd = f'python "{self.path_exec_file}" check --json {frase_secreta[0]} "{dbPath[0]}"'
                 else:
                     self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
         else:
-            self.cmd = f"python {self.path_exec_file} check --help"
+            self.cmd = f'python "{self.path_exec_file}" check --help'
         return self.cmd
 
     def execute(self, cmd, cwd):
         try:
+            print("execute intro")
             completedProcess = subprocess.run(cmd, cwd=cwd, shell=True, stdout=subprocess.PIPE,
                                               stderr=subprocess.STDOUT, timeout=900, universal_newlines=True)
+            print(f"completed: {completedProcess}")
             response = HttpResponse(completedProcess.stdout, 200)
             response.mimetype = "text/plain"
             return response

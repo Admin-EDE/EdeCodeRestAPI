@@ -127,6 +127,6 @@ APP_HOME = os.environ.get('APP_HOME', '/app')
 UPLOAD_FOLDER = APP_HOME
 APP_CODE = UPLOAD_FOLDER + '/DockerEdeCode'
 ALLOWED_EXTENSIONS = {'zip'}
-OTP_SERVICE = os.environ.get('OTP_SERVICE', 'https://otp.digital.gob.cl/otp/verify-otp')
+OTP_SERVICE = os.environ.get('OTP_SERVICE', 'https://apiede.mineduc.cl/otp/verify-otp')
 X_API_KEY = os.environ.get('X_API_KEY', 'kh4m2vKIVC8fOTp06LzE4ZfjbHlGqJd3Sq9d4sWe')
 SECRET_KEY = 'thisisthesecretkey'
