@@ -36,7 +36,7 @@ class RouteCommand:
         time = datetime.now(timezone('Chile/Continental'))
         self.t_stamp = str(int(datetime.timestamp(time)))
         print(f"time: {time}, timeStamp: {self.t_stamp}")
-        self.pathRootDirectory = f'{settings.BASE_DIR}\\{self.t_stamp}_tmpdirectory'
+        self.pathRootDirectory = os.path.join(settings.BASE_DIR, f'{self.t_stamp}_tmpdirectory')
         print(self.pathRootDirectory)
         if not os.path.exists(self.pathRootDirectory):
             os.makedirs(self.pathRootDirectory)
@@ -74,8 +74,8 @@ class RouteCommand:
 
     def init_enviroment(self):
         #os.system(f'cp -a "{settings.APP_CODE}/." {self.pathRootDirectory}')
-        self.path_exec_file = f"{self.pathRootDirectory}/parseCSVtoEDE.py"
-        self.path_exec_file = f"parseCSVtoEDE.py"
+        self.path_exec_file = f"{self.pathRootDirectory}/git_tmp/parseCSVtoEDE.py"
+        #self.path_exec_file = f"parseCSVtoEDE.py"
         print(f"Archivo parseCSVtoEDE.py copiado en: {self.path_exec_file}")
 
     def validarFormulario(self, file, otp, run, rbd):
@@ -132,11 +132,11 @@ class RouteCommand:
                     frase_secreta = myfile.readlines()
                 print(f"frase_secreta: {frase_secreta}")
                 if (frase_secreta):
-                    self.cmd = f'python "{self.path_exec_file}" check --json {frase_secreta[0]} "{dbPath[0]}"'
+                    self.cmd = f'python3 "{self.path_exec_file}" check --json {frase_secreta[0]} {dbPath[0]}'
                 else:
                     self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
         else:
-            self.cmd = f'python "{self.path_exec_file}" check --help'
+            self.cmd = f'python3 "{self.path_exec_file}" check --help'
         return self.cmd
 
     def execute(self, cmd, cwd):

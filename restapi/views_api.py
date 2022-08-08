@@ -19,8 +19,11 @@ def users(request):
 
 
 @api_view(["GET"])
-def rbd(request):
-    return HttpResponse("Hello, world.")
+def rbd(request, rbd_id: int):
+    rr = models.Report.objects.get(rbd=rbd_id)
+    rr = rr.values().all()
+    return JsonResponse({"rbd":rr})
+    # return HttpResponse("Hello, world.")
 
 
 @api_view(["GET"])
@@ -30,7 +33,7 @@ def rbds(request):
 
 
 @api_view(["GET"])
-def report(request):
+def report(request, report_id: str):
     return HttpResponse("Hello, world.")
 
 

@@ -1,8 +1,11 @@
+import json
+
 from django.shortcuts import render
 
 from django.http import HttpResponse, JsonResponse, Http404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import redirect
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
@@ -43,8 +46,11 @@ def check(request):
 
 
 @api_view(["GET"])
-def check_result(request):
-    return render(request, 'restapi/check.html', {"tojson": {}, "folder": "", "file": ""})
+def check_result(request, report_id):
+    rr = models.Report.objects.get(id=report_id)
+    rjson = rr.reportestr.replace("\u0022", "'")
+    # print(rjson)
+    return render(request, 'restapi/check.html', {"tojson": rjson, "folder": "", "file": ""})
 
 
 @api_view(["POST"])
@@ -81,9 +87,27 @@ def upload(request):
             return Http404(
                 u"No se pudo desencriptar el archivo. Recuerde usar: parseCSVtoEDE.py insert -e admin@ede.mineduc.cl")
         print("to upload file view")
-        upload_file_view(rCmd)
+        json_dump, functions_and_result = upload_file_view(rCmd)
         print("finished")
-        return HttpResponse(rCmd.__str__())
+        rep = models.Report(
+            id=rCmd.hash_,
+            rbd=rbd,
+            run=run,
+            reportestr=json_dump
+        )
+        rep.save()
+        for x, y in functions_and_result:
+            rr = models.ResultReport(
+                report_id=rCmd.hash_,
+                func_name=x,
+                result=y
+            )
+            rr.save()
+
+        return redirect(f"check_result/{rCmd.hash_}")
+        #return render(request, "restapi/check", {"tojson": json_dump})
+        # return JsonResponse(json_dump)
+        # return HttpResponse(rCmd.__str__())
     else:
         return Http404("Faltan campos en el formulario")
 

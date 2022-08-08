@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<script src="/app/static/js/d3.v4.js"></script>
-<link rel="stylesheet" href="/app/static/css/style.css">
+<script src="/static/js/d3.v4.js"></script>
+<link rel="stylesheet" href="/static/css/style.css">
 
 <div id="my_dataviz"></div>
 
@@ -22,8 +22,8 @@
   </tbody>
 </table>
 
-<br><div><img src="/{{folder}}/qrimage.jpg" class="qr-img"></div>
-<div><a href="/{{folder}}/{{file}}" download class="btn_link">Descargar informe técnico</a></div><br><br>
+<br><div><img src="//qrimage.jpg" class="qr-img"></div>
+<div><a href="/" download class="btn_link">Descargar informe técnico</a></div><br><br>
 
 <script>
 // set the dimensions and margins of the graph
@@ -41,12 +41,13 @@ var svg = d3.select("#my_dataviz")
       "translate(" + margin.left + "," + margin.top + ")");
 
 // read json data
-d3.json({{tojson}},function(data) {
+d3.json({{tojson|safe}},function(data) {
     if(data) { console.log("<true>",data) }
     else {  
-        data = JSON.parse({{tojson}})
+        data = {{tojson|safe}}
         console.log("<false>", data)
     }
+    //data = {{tojson|safe}}
   // Give the data to this cluster layout:
   var root = d3.hierarchy(data).sum(function(d){ return d.value}) // Here the size of each leave is given in the 'value' field in input data
 
