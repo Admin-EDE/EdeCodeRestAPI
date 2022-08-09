@@ -14,7 +14,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 
-def loginOTP(run_, otp_):
+def login_otp(run_, otp_):
     now_ = datetime.now(timezone('Chile/Continental'))
     dt_ = now_.strftime('%Y-%m-%dT%H:%M:%S%Z:00')
     tmz_ = int(datetime.timestamp(now_))
@@ -44,6 +44,8 @@ class RouteCommand:
             print("dir maked")
         os.system(f'cp "{settings.BASE_DIR}/static/jsonDataResult.json" "{self.pathRootDirectory}/jsonDataResult.json"')
         self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
+        self.now_ = datetime.now(timezone('Chile/Continental'))
+        self.dt_ = self.now_.strftime('%Y-%m-%dT%H:%M:%S%Z:00')
 
     def firmar_reporte(self):
         totp = pyotp.TOTP('JJCVGVKTKRCUCTKB')
@@ -54,24 +56,6 @@ class RouteCommand:
         self.hash_ = hashlib.md5(f"{self.now_},{self.run_},{self.otp_},{self.token}".encode('utf-8')).hexdigest()
         print(self.token, response)
         print(self.hash_)
-
-    def verifyOTP(self):
-        self.now_ = datetime.now(timezone('Chile/Continental'))
-        self.dt_ = self.now_.strftime('%Y-%m-%dT%H:%M:%S%Z:00')
-        return True # TODO: Testear después el verifyOTP
-        tmz_ = int(datetime.timestamp(self.now_))
-        print(f"OTP: {self.otp_},RUN: {self.run_}, NOW: {self.now_}, TZ: {tmz_}, t_:{self.dt_}")
-
-        url = settings.OTP_SERVICE
-        headers = {'Content-Type': 'application/json', 'x-api-key': settings.X_API_KEY}
-        payload = [{"RUT": self.run_, "OTP": self.otp_, "DateWithTimeZone": self.dt_}]
-        req = requests.post(url, headers=headers, json=payload)
-        print(f"Request result: {req.status_code}, {req.json()}, {req.reason}")
-        r_ = req.json()
-        print("r_:", r_, isinstance(r_[0], (str)))
-        if (isinstance(r_[0], (str))): return False
-        if (not r_[0].get('OTPVERIFY', False) or r_[0].get('OTPVERIFY') == 'RUT_NO_EXISTE'): return False
-        return True
 
     def init_enviroment(self):
         #os.system(f'cp -a "{settings.APP_CODE}/." {self.pathRootDirectory}')
