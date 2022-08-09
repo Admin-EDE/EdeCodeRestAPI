@@ -1,25 +1,24 @@
-version: "2.0"
+version: "3.8"
 
-services: 
+services:
+    db:
+        image: postgres:14.1-alpine
+        restart: always
+        environment:
+            - POSTGRES_NAME=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - '5432:5432'
+        volumes:
+            - .dbdata:/var/lib/postgresql/data
     web:
         container_name: EdeCodeRestApiComplement
         restart: always
         build: .
-        ports: 
-            - "80:8080" 
-        links: 
-            - mysql
-        volumes: 
+        ports:
+            - "80:8080"
+        volumes:
             - .:/app
-    mysql:
-        container_name: mysql
-        image: mysql:8
-        ports: 
-            - "3306:3306"
-        volumes: 
-            - ../mysql:/var/lib/mysql
-        environment:
-            - MYSQL_ROOT_PASSWORD=S3cret
-            #- MYSQL_PASSWORD=An0thrS3crt
-            #- MYSQL_USER=citizix_user
-            - MYSQL_DATABASE=edecode_api
+        depends_on:
+            - db

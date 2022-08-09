@@ -84,16 +84,14 @@ DATABASES = {
     #    "NAME": BASE_DIR / "db.sqlite3",
     #}
     'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'edecode_api',
-    #        'USER': 'nombreusuario',
-    #        'PASSWORD': 'pass',
-    #        'HOST': 'localhost',
-            'PORT': '3306',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'postgres',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': 'db',
+            'PORT': '5432',
         }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -141,4 +139,4 @@ APP_CODE = UPLOAD_FOLDER + '/DockerEdeCode'
 ALLOWED_EXTENSIONS = {'zip'}
 OTP_SERVICE = os.environ.get('OTP_SERVICE', 'https://apiede.mineduc.cl/otp/verify-otp')
 X_API_KEY = os.environ.get('X_API_KEY', 'kh4m2vKIVC8fOTp06LzE4ZfjbHlGqJd3Sq9d4sWe')
-SECRET_KEY = 'thisisthesecretkey'
+#SECRET_KEY = 'thisisthesecretkey'

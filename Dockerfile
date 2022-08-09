@@ -18,6 +18,7 @@ ENV PYTHONUNBUFFERED True
 ENV PORT 8080
 ENV DEBUG False
 ENV TOMIGRATE True
+ENV GIT_PYTHON_REFRESH=quiet
 #ENV OTP_SERVICE << URL del servicio del verificador de indentidad >>
 #ENV X_API_KEY << API KEY del servicio del verificador de identidad >>
 

@@ -9,6 +9,10 @@ venv/
 
 *_tmpdirectory/
 
+log.txt*
+
+.dbdata/
+
 db.sqlite3
 
 # Distribution / packaging
@@ -33,4 +37,4 @@ MANIFEST
 
 #exclude *.pyc files
 *.pyc
-/.idea/
+.idea/
