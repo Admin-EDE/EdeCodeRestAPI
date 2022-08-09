@@ -1,4 +1,4 @@
-version: "3"
+version: "2.0"
 
 services: 
     web:
@@ -8,15 +8,18 @@ services:
         ports: 
             - "80:8080" 
         links: 
-            - mongo
+            - mysql
         volumes: 
             - .:/app
-    mongo:
-        container_name: mongo
-        image: mongo
+    mysql:
+        container_name: mysql
+        image: mysql:8
         ports: 
-            - "27017:27017"
-        logging:
-            driver: none
+            - 3306:3306
         volumes: 
-            - D:/mongo:/data/db
+            - D:/mysql:/var/lib/mysql
+        environment:
+            #- MYSQL_ROOT_PASSWORD=S3cret
+            #- MYSQL_PASSWORD=An0thrS3crt
+            #- MYSQL_USER=citizix_user
+            #- MYSQL_DATABASE=

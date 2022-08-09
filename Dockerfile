@@ -2,9 +2,16 @@ FROM edemineduc/etl
 LABEL maintainer="Centro de Innovación (Mineduc) <admin@ede.mineduc.cl>"
 RUN apt-get install -y cron
 
+
+RUN apt-get -y install python3 --fix-missing
+RUN apt-get -y install python3-pip --fix-missing
+#dependencies for sqlcipher
+RUN apt install sqlcipher libsqlcipher0 libsqlcipher-dev -q -y --fix-missing
+
+RUN apt install python3-mysqldb -q -y --fix-missing
+
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
-ENV MONGO_URL mongodb://mongo:27017/reportdb
 ENV PORT 8080
 ENV DEBUG False
 #ENV OTP_SERVICE << URL del servicio del verificador de indentidad >>
