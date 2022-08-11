@@ -140,3 +140,6 @@ ALLOWED_EXTENSIONS = {'zip'}
 OTP_SERVICE = os.environ.get('OTP_SERVICE', 'https://apiede.mineduc.cl/otp/verify-otp')
 X_API_KEY = os.environ.get('X_API_KEY', 'kh4m2vKIVC8fOTp06LzE4ZfjbHlGqJd3Sq9d4sWe')
 #SECRET_KEY = 'thisisthesecretkey'
+
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"

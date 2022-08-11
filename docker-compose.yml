@@ -12,7 +12,7 @@ services:
             - '5432:5432'
         volumes:
             - .dbdata:/var/lib/postgresql/data
-    web:
+    app:
         container_name: EdeCodeRestApiComplement
         restart: always
         build: .
@@ -22,3 +22,21 @@ services:
             - .:/app
         depends_on:
             - db
+    redis:
+        image: redis:alpine
+    celery:
+        restart: always
+        build:
+            context: .
+        command: celery -A "reporteede" worker -l info -B
+        volumes:
+            - .:/app
+        environment:
+            - DB_HOST=app
+            - DB_NAME=postgres
+            - DB_USER=postgres
+            - DB_PASS=supersecretpassword
+        depends_on:
+            - db
+            - redis
+            - app

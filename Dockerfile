@@ -9,8 +9,8 @@ RUN apt-get -y install python3 --fix-missing
 RUN apt-get -y install python3-pip --fix-missing
 #dependencies for sqlcipher
 RUN apt install sqlcipher libsqlcipher0 libsqlcipher-dev -q -y --fix-missing
-RUN apt install mysql-client-8.0 -q -y --fix-missing
-
+#RUN apt install mysql-client-8.0 -q -y --fix-missing
+#RUN apt install redis
 #RUN apt install python3-mysqldb -q -y --fix-missing
 
 # Allow statements and log messages to immediately appear in the Knative logs

@@ -38,3 +38,4 @@ MANIFEST
 #exclude *.pyc files
 *.pyc
 .idea/
+celerybeat-schedule.db
