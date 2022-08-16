@@ -39,3 +39,4 @@ MANIFEST
 *.pyc
 .idea/
 celerybeat-schedule.db
+*.zip

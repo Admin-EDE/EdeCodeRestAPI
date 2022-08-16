@@ -41,11 +41,11 @@ psycopg2-binary==2.9.3
 pyasn1==0.4.2
 pyasn1-modules==0.2.1
 pycparser==2.21
-pycryptodome==3.9.8
+pycryptodome
 PyJWT==1.7.1
 pyotp==2.6.0
 pyparsing==3.0.9
-pysqlcipher3==1.0.3
+pysqlcipher3
 python-dateutil==2.8.1
 pytz==2021.3
 pyxdg==0.26
@@ -54,8 +54,8 @@ qrcode==7.3.1
 redis==4.3.4
 requests==2.24.0
 service-identity==18.1.0
-SQLAlchemy==1.3.19
-sqlparse==0.4.2
+SQLAlchemy
+sqlparse
 ssh-import-id==5.10
 tzdata==2022.1
 urllib3==1.25.10

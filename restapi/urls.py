@@ -8,6 +8,7 @@ urlpatterns = [
     path('check/', views.check, name='check'),
     path('upload', views.upload, name='upload'),
     path('check_result/<str:report_id>/', views.check_result, name='upload'),
+    path('success/', views.success_view, name='success'),
 
     path('login/', views_api.login_view, name='login'),
     path('users/', views_api.users, name='users'),

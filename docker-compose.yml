@@ -28,7 +28,7 @@ services:
         restart: always
         build:
             context: .
-        command: celery -A "reporteede" worker -l info -B
+        command: celery -A "reporteede" worker -l debug -B
         volumes:
             - .:/app
         environment:

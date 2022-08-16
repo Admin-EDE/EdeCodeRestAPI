@@ -14,11 +14,14 @@ from rest_framework.permissions import AllowAny
 
 from . import models
 from . import otp_model
-from .tasks import send_email
+from .tasks import check_database
 
 from .process_file import upload_file_view
 from django.conf import settings
 # Create your views here.
+
+
+import threading
 
 
 @api_view(["GET"])
@@ -34,6 +37,9 @@ def check_result(request, report_id):
     return render(request, 'restapi/check.html', {"tojson": rjson, "folder": "", "file": ""})
 
 
+def success_view(request):
+    return HttpResponse("Se enviará el resultado a su correo electrónico", status=200)
+
 @api_view(["POST"])
 def upload(request):
     file = request.FILES.get("file", None)
@@ -45,54 +51,34 @@ def upload(request):
         print(run)
         print(otp)
         print(rbd)
-        query_rbd = models.QuerysRbds(id=0, filename=file.name, run=run, otp=otp, rbd=rbd)
+        is_valid = otp_model.login_otp(run, otp)
+        query_rbd = models.QuerysRbds(id=None,
+                                      filename=file.name,
+                                      run=run,
+                                      otp=otp,
+                                      otp_is_valid=is_valid,
+                                      rbd=rbd)
         query_rbd.save()
+        print(f"to delay, is valid: {is_valid}")
         r_cmd = otp_model.RouteCommand()  # set session
-        print("a validar formulario")
         if not r_cmd.validarFormulario(file, run, otp, rbd):
             print("error al validar el formulario")
-            return JsonResponse({"error": "Error al validar el formulario"}, status=404)  # Check form data
+            return HttpResponse({"error": "Error al validar el formulario"})  # Check form data
         print("a init enviroment")
         r_cmd.init_enviroment()  # Crea ambiente de trabajo
         print("a extraer")
         r_cmd.extractAll(r_cmd.file)  # extract file from form
         if not otp_model.login_otp(run, otp):
-            return JsonResponse({ "error":
-                "El 'verificador de identidad' ingresado no es correcto!"}, status=404)  # Chequea verificador de Identidad del form
+            return HttpResponse({"error":
+                                  "El 'verificador de identidad' ingresado no es correcto!"})  # Chequea verificador de Identidad del form
         print("a firmar reporte")
         r_cmd.firmar_reporte()  # Genera la firma del reporte
-        print("check reporte")
-        cmd = r_cmd.getCheckCommand()
-        print(cmd)
-        if r_cmd.cmd == "NO_SE_PUDO_REALIZAR_DESENCRIPTACION":
-            return JsonResponse({"error":
-                u"No se pudo desencriptar el archivo. Recuerde usar: parseCSVtoEDE.py insert -e admin@ede.mineduc.cl"}, status=404)
-        print("to upload file view")
-        json_dump, functions_and_result = upload_file_view(r_cmd)
-        print("finished")
-        if json_dump is None or functions_and_result is None:
-            return JsonResponse({"error": "Error en procesamiento del resultado del chequeo"}, status=500)
-        dataFile = [f for f in sorted(os.listdir(r_cmd.pathRootDirectory)) if (str(f))[-9:] == "_Data.zip"]
-        if len(dataFile) > 0:
-            print(f"datafile en view: {dataFile}")
-            send_email(os.path.join(r_cmd.pathRootDirectory, dataFile[0]))
-            print("sended email")
-        rep = models.Report(
-            id=r_cmd.hash_,
-            rbd=rbd,
-            run=run,
-            reportestr=json_dump
-        )
-        rep.save()
-        for x, y in functions_and_result:
-            rr = models.ResultReport(
-                report_id=r_cmd.hash_,
-                func_name=x,
-                result=y
-            )
-            rr.save()
 
-        return redirect(f"check_result/{r_cmd.hash_}")
+        t = threading.Thread(target=check_database, args=(r_cmd, run, otp, rbd))
+        t.start()
+        #check_database.delay(query_rbd.id, run, otp, rbd)
+        print("delayed")
+        return redirect(f"success/")
     else:
         return JsonResponse({"error":"Faltan campos en el formulario"}, status=404)
 

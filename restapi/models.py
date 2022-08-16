@@ -12,6 +12,7 @@ class QuerysRbds(models.Model):
     filename = models.CharField(max_length=20)
     run = models.CharField(max_length=11)
     otp = models.IntegerField()
+    otp_is_valid = models.BooleanField(null=True)
     rbd = models.IntegerField()
 
 
