@@ -79,18 +79,18 @@ WSGI_APPLICATION = "reporteede.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    #"default": {
-    #    "ENGINE": "django.db.backends.sqlite3",
-    #    "NAME": BASE_DIR / "db.sqlite3",
-    #}
-    'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'postgres',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
-            'HOST': 'db',
-            'PORT': '5432',
-        }
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+    #'default': {
+    #        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #        'NAME': 'postgres',
+    #        'USER': 'postgres',
+    #        'PASSWORD': 'postgres',
+    #        'HOST': 'db',
+    #        'PORT': '5432',
+    #    }
 }
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -143,3 +143,6 @@ X_API_KEY = os.environ.get('X_API_KEY', 'kh4m2vKIVC8fOTp06LzE4ZfjbHlGqJd3Sq9d4sW
 
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "redis://redis:6379"
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'

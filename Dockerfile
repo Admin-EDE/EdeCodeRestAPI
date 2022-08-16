@@ -1,14 +1,15 @@
 #FROM edemineduc/etl
 FROM ubuntu:22.04
 LABEL maintainer="Centro de Innovación (Mineduc) <admin@ede.mineduc.cl>"
-RUN apt update
+RUN apt-get update
 RUN apt-get install -y cron
 
-
+RUN apt search python3
 RUN apt-get -y install python3 --fix-missing
 RUN apt-get -y install python3-pip --fix-missing
 #dependencies for sqlcipher
-RUN apt install sqlcipher libsqlcipher0 libsqlcipher-dev -q -y --fix-missing
+RUN apt-get install sqlcipher libsqlcipher0 libsqlcipher-dev -q -y --fix-missing
+RUN apt-get install git -q -y --fix-missing
 #RUN apt install mysql-client-8.0 -q -y --fix-missing
 #RUN apt install redis
 #RUN apt install python3-mysqldb -q -y --fix-missing

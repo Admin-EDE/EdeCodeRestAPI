@@ -97,7 +97,7 @@ def upload_file_view(rCmd: otp_model.RouteCommand):
             #print(dir(jsonDumps.))
             return jsonDumps, functions_and_result
         else:
-            return response
+            return None, response
     except Exception as e:
         print(f"Error general en process file: {e}")
         #abort(500, e)

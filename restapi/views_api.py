@@ -15,23 +15,8 @@ from rest_framework.decorators import api_view
 from . import models
 from . import otp_model
 from .serializers import UserSigninSerializer
-from functools import wraps
 
-
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        print(args)
-        print(kwargs)
-        token = args[0].GET.get('token', None) #http://localhost/rbd/1-9?token=alshfjfjdklsfj89549834ur
-        if not token:
-            return JsonResponse({'message' : 'Token is missing!'})
-        try:
-            data = jwt.decode(token, settings.SECRET_KEY, algorithms="HS512")
-        except Exception as e:
-            return JsonResponse({'message' : 'Token is invalid!'})
-        return f(*args, **kwargs)
-    return decorated
+from .auth_token import token_required
 
 
 def login_view(request):
@@ -49,10 +34,10 @@ def login_view(request):
             user = models.User(username=username)
             user.save()
             # create token
-            token = jwt.encode({
+            token = jwt.encode(payload={
                 'user': username,
                 'exp': datetime.utcnow() + timedelta(seconds=settings.TOKEN_EXPIRED_AFTER_SECONDS)},
-                settings.SECRET_KEY,
+                key=settings.SECRET_KEY,
                 algorithm="HS512")
             print(token)
             # remove b' .... ' with slicing token string

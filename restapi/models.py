@@ -8,11 +8,12 @@ class User(models.Model):
 
 
 class QuerysRbds(models.Model):
-    id = models.IntegerField(auto_created=True, primary_key=True)
+    id = models.IntegerField(auto_created=True,  primary_key=True)
     filename = models.CharField(max_length=20)
     run = models.CharField(max_length=11)
     otp = models.IntegerField()
     rbd = models.IntegerField()
+
 
 class Report(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
