@@ -16,6 +16,7 @@ from . import models
 from . import otp_model
 from .tasks import check_database
 
+from django.db.models import Max
 from .process_file import upload_file_view
 from django.conf import settings
 # Create your views here.
@@ -46,35 +47,41 @@ def upload(request):
     run = request.POST.get("run", None)
     otp = request.POST.get("otp", None)
     rbd = request.POST.get("rbd", None)
-    if not (file is None and run is None and otp is None and rbd is None):
+    email = request.POST.get("email", None)
+    if not (file is None or run is None or otp is None or rbd is None or email is None):
         print(file)
         print(run)
         print(otp)
         print(rbd)
+        print(email)
         is_valid = otp_model.login_otp(run, otp)
-        query_rbd = models.QuerysRbds(id=None,
+        max_id = models.QuerysRbds.objects.aggregate(Max('id'))['id__max']
+        print(max_id)
+        max_id = max_id+1 if max_id is not None else 0
+        query_rbd = models.QuerysRbds(id=max_id,
                                       filename=file.name,
                                       run=run,
                                       otp=otp,
                                       otp_is_valid=is_valid,
-                                      rbd=rbd)
+                                      rbd=rbd,
+                                      email=email)
         query_rbd.save()
         print(f"to delay, is valid: {is_valid}")
         r_cmd = otp_model.RouteCommand()  # set session
         if not r_cmd.validarFormulario(file, run, otp, rbd):
             print("error al validar el formulario")
-            return HttpResponse({"error": "Error al validar el formulario"})  # Check form data
+            return JsonResponse({"error": "Error al validar el formulario"})  # Check form data
         print("a init enviroment")
         r_cmd.init_enviroment()  # Crea ambiente de trabajo
         print("a extraer")
         r_cmd.extractAll(r_cmd.file)  # extract file from form
         if not otp_model.login_otp(run, otp):
-            return HttpResponse({"error":
+            return JsonResponse({"error":
                                   "El 'verificador de identidad' ingresado no es correcto!"})  # Chequea verificador de Identidad del form
         print("a firmar reporte")
         r_cmd.firmar_reporte()  # Genera la firma del reporte
 
-        t = threading.Thread(target=check_database, args=(r_cmd, run, otp, rbd))
+        t = threading.Thread(target=check_database, args=(r_cmd, run, otp, rbd, email))
         t.start()
         #check_database.delay(query_rbd.id, run, otp, rbd)
         print("delayed")

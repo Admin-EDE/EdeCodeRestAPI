@@ -117,7 +117,7 @@ class RouteCommand:
                     frase_secreta = myfile.readlines()
                 print(f"frase_secreta: {frase_secreta}")
                 if (frase_secreta):
-                    self.cmd = f'python3 "{self.path_exec_file}" check --json {frase_secreta[0]} {dbPath[0]}'
+                    self.cmd = f'python3 "{self.path_exec_file}" check -t 0 --json {frase_secreta[0]} {dbPath[0]}'
                 else:
                     self.cmd = "NO_SE_PUDO_REALIZAR_DESENCRIPTACION"
         else:
@@ -128,7 +128,7 @@ class RouteCommand:
         try:
             print("execute intro")
             completedProcess = subprocess.run(cmd, cwd=cwd, shell=True, stdout=subprocess.PIPE,
-                                              stderr=subprocess.STDOUT, timeout=900, universal_newlines=True)
+                                              stderr=subprocess.STDOUT, timeout=9999, universal_newlines=True)
             print(f"completed: {completedProcess}")
             response = HttpResponse(completedProcess.stdout, 200)
             response.mimetype = "text/plain"

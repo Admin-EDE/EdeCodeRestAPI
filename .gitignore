@@ -12,6 +12,7 @@ venv/
 log.txt*
 
 .dbdata/
+.ddata/
 
 db.sqlite3
 
