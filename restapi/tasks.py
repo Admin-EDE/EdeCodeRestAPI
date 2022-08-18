@@ -6,8 +6,8 @@ from . import otp_model
 from django.template.loader import render_to_string
 
 from .process_file import upload_file_view
-from celery import shared_task
-from celery.utils.log import get_logger
+#from celery import shared_task
+#from celery.utils.log import get_logger
 import logging
 
 from django.db.models import Max

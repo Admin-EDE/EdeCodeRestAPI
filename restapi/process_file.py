@@ -2,7 +2,7 @@ import os
 from zipfile import ZipFile
 from datetime import datetime
 from pytz import timezone
-import qrcode
+
 import json
 from git import Repo
 import shutil
@@ -11,7 +11,7 @@ from . import otp_model
 
 def clone_repo(repodir):
 
-    Repo.clone_from("https://github.com/Admin-EDE/DockerEdeCode", repodir, branch='master')
+    Repo.clone_from("https://github.com/Admin-EDE/DockerEdeCode", repodir, branch='updated_reqs')
     print("cloned")
 
 
