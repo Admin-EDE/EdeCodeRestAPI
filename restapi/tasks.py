@@ -12,32 +12,59 @@ import logging
 
 from django.db.models import Max
 
+import time
+from typing import List
+from queue import SimpleQueue
+import threading
+
 logger = logging.getLogger(__name__)
 
+q = SimpleQueue()
 
-def send_email(filepath, data = {}, _hash="", to_emails: list = []):
-    msg = EmailMessage(subject=f"[Resultado Verificaciones] {_hash}",
-                       body="",#'Body of the email',
-                       from_email=None, #'from@email.com',
-                       to=[*to_emails])
 
-     # fail_silently = False )
-    # Set this to False so that you will be noticed in any exception raised)
+def worker():
+    while True:
+        item = q.get()
+        print(f'Working on {item}')
+        item.start()
+        item.join()
+        print(f'Finished {item}')
 
-    msg.content_subtype = "html"
-    msg.attach_file(filepath)#'pdfs/Instructions.pdf')
+
+threading.Thread(target=worker, daemon=True).start()
+
+
+def create_reporte_checkhtml(json_data):
     with open("static/check.html", "r") as check_handler:
         str_check = check_handler.read()
     with open("static/js/d3.v4.js", "r") as d3h:
         strkd3 = d3h.read()
     with open("static/css/style.css", "r") as cssh:
         strcss = cssh.read()
-    str_check = str_check.replace("asdf_toreplace_replacing", str(data))
+    str_check = str_check.replace("asdf_toreplace_replacing", str(json_data))
     str_check = str_check.replace("toreplace_d3_toreplace", str(strkd3))
     str_check = str_check.replace("toreplace_css_toreplace", str(strcss))
-    #print(str(str_check))
+    return str_check
+
+
+def send_email(filepath, rut, data = {}, _hash="", to_emails: list = [], domain=""):
+    msg = EmailMessage(subject=f"Resultado de verificación LCD",
+                       body="",#'Body of the email',
+                       from_email=None, #'from@email.com',
+                       to=[*to_emails])
+
+    msg.content_subtype = "html"
+    msg.attach_file(filepath)#'pdfs/Instructions.pdf')
+
+    str_check = create_reporte_checkhtml(data)
     msg.attach("reporte.html", str_check)
-    msg.body = str_check
+    msg.body = f"Sr(a). rut no {rut}\n<br>\
+    Se adjunta la revisión del Libro de Clases Digital que realizó el día (día de la subida del archivo). \
+    También se envía un registro log con la revisión.<br>\
+    Puede ver el resultado en el archivo adjunto o la dirección: \
+    <a href=http://{domain}/check_result/{_hash}>http://{domain}/check_result/{_hash}</a>\
+    \n\n<br><br>Atte\
+    \n<br>EDE – MINEDUC<br><br>"
     msg.send()
 
 
@@ -45,18 +72,7 @@ logger.info("*-*"*40)
 
 
 #@shared_task()
-def check_database(r_cmd, run, otp, rbd, email):
-    #print("print enter the check func")
-    #print(fileid)
-    #logger.info("enter the check function")
-    #file = models.QuerysRbds.objects.filter(id=fileid).values("tmpfile")
-    #logger.info(dir(file))
-    #file  = models.models.FileField(file)
-    #print(type(file))
-    #print(file)
-    #file  = file
-    #logger.info(file)
-
+def check_database(r_cmd, domain, run, rbd, email):
     print("check reporte")
     cmd = r_cmd.getCheckCommand()
     print(cmd)
@@ -75,7 +91,9 @@ def check_database(r_cmd, run, otp, rbd, email):
         send_email(os.path.join(r_cmd.pathRootDirectory, dataFile[0]),
                    data=json_dump,
                    _hash=r_cmd.hash_,
-                   to_emails=[email])
+                   to_emails=[email],
+                   domain=domain,
+                   rut=run)
         print("sended email")
     rep = models.Report(
         id=r_cmd.hash_,
@@ -95,3 +113,5 @@ def check_database(r_cmd, run, otp, rbd, email):
             result=y
         )
         rr.save()
+
+

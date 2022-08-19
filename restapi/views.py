@@ -1,12 +1,7 @@
-import json
-import os
 
-from django.shortcuts import render
 
-from django.http import HttpResponse, JsonResponse, Http404
-from django.contrib.auth import authenticate
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import redirect
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
 
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
@@ -14,11 +9,10 @@ from rest_framework.permissions import AllowAny
 
 from . import models
 from . import otp_model
-from .tasks import check_database
+from .tasks import check_database, q
 
 from django.db.models import Max
-from .process_file import upload_file_view
-from django.conf import settings
+
 # Create your views here.
 
 
@@ -80,9 +74,12 @@ def upload(request):
                                   "El 'verificador de identidad' ingresado no es correcto!"})  # Chequea verificador de Identidad del form
         print("a firmar reporte")
         r_cmd.firmar_reporte()  # Genera la firma del reporte
+        domain = request.get_host()
+        # domain = 'localhost:8000'
+        print(domain)
 
-        t = threading.Thread(target=check_database, args=(r_cmd, run, otp, rbd, email))
-        t.start()
+        t = threading.Thread(target=check_database, args=(r_cmd, domain, run, rbd, email))
+        q.put(t)
         #check_database.delay(query_rbd.id, run, otp, rbd)
         print("delayed")
         return redirect(f"success/")

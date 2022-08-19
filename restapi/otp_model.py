@@ -1,10 +1,9 @@
-import io, os, sys
+import os
 import subprocess
 from zipfile import ZipFile
 from datetime import datetime
 from pytz import timezone
 from werkzeug.utils import secure_filename
-import json
 import hashlib
 import requests
 from django.http import HttpResponse
