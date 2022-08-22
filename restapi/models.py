@@ -24,6 +24,7 @@ class Report(models.Model):
     run = models.CharField(max_length=11)
     reportestr = models.CharField(max_length=20000)
     t_stamp = models.DateTimeField(auto_now=True)
+    queryid = models.IntegerField(null=True)
 
 
 class ResultReport(models.Model):

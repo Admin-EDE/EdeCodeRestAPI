@@ -41,44 +41,63 @@ def send_email(filepath, rut, data = {}, _hash="", to_emails: list = [], domain=
     msg.send()
 
 
-def check_database(r_cmd, domain, run, rbd, email):
-    print("check reporte")
-    cmd = r_cmd.getCheckCommand()
-    print(cmd)
-    if r_cmd.cmd == "NO_SE_PUDO_REALIZAR_DESENCRIPTACION":
-        return Exception({"error":
-                                 u"No se pudo desencriptar el archivo. \
-                                 Recuerde usar: parseCSVtoEDE.py insert -e admin@ede.mineduc.cl"})
-    print("to upload file view")
-    json_dump, functions_and_result = upload_file_view(r_cmd)
-    print("finished")
-    if json_dump is None or functions_and_result is None:
-        return Exception({"error": "Error en procesamiento del resultado del chequeo"})  # 500
-    data_file = [f for f in sorted(os.listdir(r_cmd.pathRootDirectory)) if (str(f))[-9:] == "_Data.zip"]
-    if len(data_file) > 0:
-        print(f"datafile en view: {data_file}")
-        send_email(os.path.join(r_cmd.pathRootDirectory, data_file[0]),
-                   data=json_dump,
-                   _hash=r_cmd.hash_,
-                   to_emails=[email],
-                   domain=domain,
-                   rut=run)
-        print("sended email")
-    rep = models.Report(
-        id=r_cmd.hash_,
-        rbd=rbd,
-        run=run,
-        reportestr=json_dump
-    )
-    rep.save()
-    for x, y in functions_and_result:
-        max_id = models.ResultReport.objects.aggregate(Max('id'))['id__max']
-        print(max_id)
-        max_id = max_id + 1 if max_id is not None else 0
-        rr = models.ResultReport(
-            id=max_id,
-            report_id=r_cmd.hash_,
-            func_name=x,
-            result=y
+def send_email_error(e: Exception, body_msg: str, to_emails: list):
+    msg = EmailMessage(subject=f"Resultado de verificación LCD [ERROR]",
+                       body="",  # 'Body of the email',
+                       from_email=None,  # 'from@email.com',
+                       to=[*to_emails, "admin@ede.mineduc.cl"])
+
+    msg.content_subtype = "html"
+    msg.body = "Lo sentimos, ha ocurrido un error,\
+     lo revisaremos lo más pronto posible. A continuación el código del error: <br>"
+    msg.body = msg.body + "<br>" + body_msg + "<br><br>" + str(e) + "<br><br>" + str(e.__traceback__)
+    msg.send()
+
+
+def check_database(idquery, r_cmd, domain, run, rbd, email):
+    try:
+        print("check reporte")
+        cmd = r_cmd.getCheckCommand()
+        print(cmd)
+        if r_cmd.cmd == "NO_SE_PUDO_REALIZAR_DESENCRIPTACION":
+            raise Exception({"error":
+                                     u"No se pudo desencriptar el archivo. \
+                                     Recuerde usar: parseCSVtoEDE.py insert -e admin@ede.mineduc.cl"})
+        print("to upload file view")
+        json_dump, functions_and_result = upload_file_view(r_cmd)
+        print("finished")
+        if json_dump is None or functions_and_result is None:
+            raise Exception("Error en procesamiento del resultado del chequeo")  # 500
+        data_file = [f for f in sorted(os.listdir(r_cmd.pathRootDirectory)) if (str(f))[-9:] == "_Data.zip"]
+        if len(data_file) > 0:
+            print(f"datafile en view: {data_file}")
+            send_email(os.path.join(r_cmd.pathRootDirectory, data_file[0]),
+                       data=json_dump,
+                       _hash=r_cmd.hash_,
+                       to_emails=[email],
+                       domain=domain,
+                       rut=run)
+            print("sended email")
+        else:
+            raise Exception("No hay archivo de resultados")
+        rep = models.Report(
+            id=r_cmd.hash_,
+            rbd=rbd,
+            run=run,
+            reportestr=json_dump,
+            queryid=idquery
         )
-        rr.save()
+        rep.save()
+        for x, y in functions_and_result:
+            max_id = models.ResultReport.objects.aggregate(Max('id'))['id__max']
+            print(max_id)
+            max_id = max_id + 1 if max_id is not None else 0
+            rr = models.ResultReport(
+                id=max_id,
+                report_id=r_cmd.hash_,
+                func_name=x,
+                result=y
+            )
+            rr.save()
+    except Exception as e:
+        send_email_error(e, "", [email])

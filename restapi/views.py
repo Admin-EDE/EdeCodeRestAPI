@@ -80,7 +80,7 @@ def upload(request):
         # domain = 'localhost:8000'
         print(domain)
 
-        t = threading.Thread(target=check_database, args=(r_cmd, domain, run, rbd, email))
+        t = threading.Thread(target=check_database, args=(query_rbd.id, r_cmd, domain, run, rbd, email))
         q.put(t)
         print("delayed")
         return redirect(f"success/")
