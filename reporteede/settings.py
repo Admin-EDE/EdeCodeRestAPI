@@ -79,10 +79,10 @@ WSGI_APPLICATION = "reporteede.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    #"default": {
+    # "default": {
     #    "ENGINE": "django.db.backends.sqlite3",
     #    "NAME": BASE_DIR / "db.sqlite3",
-    #}
+    # }
     'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'postgres',
@@ -99,9 +99,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
 ]
 
 
@@ -139,19 +139,14 @@ APP_CODE = UPLOAD_FOLDER + '/DockerEdeCode'
 ALLOWED_EXTENSIONS = {'zip'}
 OTP_SERVICE = os.environ.get('OTP_SERVICE', 'https://apiede.mineduc.cl/otp/verify-otp')
 X_API_KEY = os.environ.get('X_API_KEY', 'kh4m2vKIVC8fOTp06LzE4ZfjbHlGqJd3Sq9d4sWe')
-#SECRET_KEY = 'thisisthesecretkey'
 
-
-#CELERY_BROKER_URL = "redis://redis:6379"
-#CELERY_RESULT_BACKEND = "redis://redis:6379"
-
-#Dummy Backend
-#EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+# Dummy Backend
+# EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 # Gmail SMTP Server
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
 EMAIL_HOST_USER = 'edemailing2022@gmail.com'
-EMAIL_HOST_PASSWORD = 'rmtwiumlbwegzqsk'# os.environ.get('MY_PASSWORD')
+EMAIL_HOST_PASSWORD = 'rmtwiumlbwegzqsk'  # os.environ.get('MY_PASSWORD')
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

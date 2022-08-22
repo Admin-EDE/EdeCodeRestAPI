@@ -5,30 +5,12 @@ from datetime import datetime
 from pytz import timezone
 from werkzeug.utils import secure_filename
 import hashlib
-import requests
+
 from django.http import HttpResponse
 
 import pyotp
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-
-
-def login_otp(run_, otp_):
-    now_ = datetime.now(timezone('Chile/Continental'))
-    dt_ = now_.strftime('%Y-%m-%dT%H:%M:%S%Z:00')
-    tmz_ = int(datetime.timestamp(now_))
-    print(f"OTP: {otp_},RUN: {run_}, NOW: {now_}, TZ: {tmz_}, t_:{dt_}")
-
-    url = settings.OTP_SERVICE
-    print(url)
-    headers = {'Content-Type': 'application/json', 'x-api-key': settings.X_API_KEY}
-    payload = [{"RUT": run_, "OTP": otp_, "TIMESTAMP": dt_}]
-    req = requests.post(url, headers=headers, json=payload)
-    print(f"Request result: {req.status_code}, {req.json()}, {req.reason}")
-    r_ = req.json()
-    if (req.status_code != 200 or not r_[0].get('OTPVERIFY', False) or r_[0].get(
-            'OTPVERIFY') == 'RUT_NO_EXISTE'): return False
-    return True
 
 
 class RouteCommand:
@@ -136,18 +118,6 @@ class RouteCommand:
             response = HttpResponse("Timedout", 400)
             response.mimetype = "text/plain"
             return response
-
-        # def saveReportResult(self, jsonDumps):
-        #self.post_id = dbMongoCollection.insert_one({
-        #    '_id': self.hash_,
-        #    'rbd': self.rbd_,
-        #    'dt': self.now_,
-        #    't_stamp': self.t_stamp,
-        #    'run': self.run_,
-        #    'otpEDE': self.token,
-        #    'otpUser': self.otp_,
-        #    'json': jsonDumps
-        #}).inserted_id
 
     def allowed_file(self, filename):
         return '.' in filename and \

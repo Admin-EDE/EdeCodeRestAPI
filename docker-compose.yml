@@ -22,21 +22,4 @@ services:
             - .:/app
         depends_on:
             - db
-    #redis:
-    #    image: redis:alpine
-    #celery:
-    #    restart: always
-    #    build:
-    #        context: .
-    #    command: celery -A "reporteede" worker -l debug -B
-    #    volumes:
-    #        - .:/app
-    #    environment:
-    #        - DB_HOST=app
-    #        - DB_NAME=postgres
-    #        - DB_USER=postgres
-    #        - DB_PASS=supersecretpassword
-    #    depends_on:
-    #        - db
-    #        - redis
-    #        - app
+

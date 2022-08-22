@@ -13,7 +13,7 @@ import jwt
 from rest_framework.decorators import api_view
 
 from . import models
-from . import otp_model
+from .lib_login_otp import login_otp
 from .serializers import UserSigninSerializer
 
 from .auth_token import token_required
@@ -29,8 +29,8 @@ def login_view(request):
         signin_serializer = UserSigninSerializer(data={"username": username, "password": password})
         if not signin_serializer.is_valid():
             return HttpResponse(signin_serializer.errors, status=400)
-        print(f"Resultado otp: {otp_model.login_otp(username, password)}")
-        if otp_model.login_otp(username, password):
+        print(f"Resultado otp: {login_otp(username, password)}")
+        if login_otp(username, password):
             user = models.User(username=username)
             user.save()
             # create token
@@ -76,5 +76,3 @@ def report(request, report_id: str):
     for res in rr:
         response[res['func_name']] = res['result']
     return JsonResponse(response)
-
-

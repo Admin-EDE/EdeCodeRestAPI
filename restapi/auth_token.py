@@ -9,7 +9,7 @@ def token_required(f):
     def decorated(*args, **kwargs):
         print(args)
         print(kwargs)
-        token = args[0].GET.get('token', None) #http://localhost/rbd/1-9?token=alshfjfjdklsfj89549834ur
+        token = args[0].GET.get('token', None)  # http://localhost/rbd/1-9?token=alshfjfjdklsfj89549834ur
         if not token:
             return JsonResponse({'message': 'Token is missing!'})
         try:

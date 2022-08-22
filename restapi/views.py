@@ -8,8 +8,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 from . import models
-from . import otp_model
-from .tasks import check_database, q
+from .lib_route_command import RouteCommand
+from .lib_login_otp import login_otp
+from .tasks_check_database import check_database
+from .tasks import q
 
 from django.db.models import Max
 
@@ -28,12 +30,13 @@ def check(request):
 def check_result(request, report_id):
     rr = models.Report.objects.get(id=report_id)
     rjson = rr.reportestr.replace("\u0022", "'")
-    # print(rjson)
     return render(request, 'restapi/check.html', {"tojson": rjson, "folder": "", "file": ""})
 
 
 def success_view(request):
-    return HttpResponse("Se enviará el resultado a su correo electrónico", status=200)
+    return render(request, 'restapi/success.html')
+    # return HttpResponse("Se enviará el resultado a su correo electrónico", status=200)
+
 
 @api_view(["POST"])
 def upload(request):
@@ -48,7 +51,7 @@ def upload(request):
         print(otp)
         print(rbd)
         print(email)
-        is_valid = otp_model.login_otp(run, otp)
+        is_valid = login_otp(run, otp)
         max_id = models.QuerysRbds.objects.aggregate(Max('id'))['id__max']
         print(max_id)
         max_id = max_id+1 if max_id is not None else 0
@@ -61,7 +64,7 @@ def upload(request):
                                       email=email)
         query_rbd.save()
         print(f"to delay, is valid: {is_valid}")
-        r_cmd = otp_model.RouteCommand()  # set session
+        r_cmd = RouteCommand()  # set session
         if not r_cmd.validarFormulario(file, run, otp, rbd):
             print("error al validar el formulario")
             return JsonResponse({"error": "Error al validar el formulario"})  # Check form data
@@ -69,9 +72,8 @@ def upload(request):
         r_cmd.init_enviroment()  # Crea ambiente de trabajo
         print("a extraer")
         r_cmd.extractAll(r_cmd.file)  # extract file from form
-        if not otp_model.login_otp(run, otp):
-            return JsonResponse({"error":
-                                  "El 'verificador de identidad' ingresado no es correcto!"})  # Chequea verificador de Identidad del form
+        if not login_otp(run, otp):  # Chequea verificador de Identidad del form
+            return JsonResponse({"error": "El 'verificador de identidad' ingresado no es correcto!"})
         print("a firmar reporte")
         r_cmd.firmar_reporte()  # Genera la firma del reporte
         domain = request.get_host()
@@ -80,9 +82,7 @@ def upload(request):
 
         t = threading.Thread(target=check_database, args=(r_cmd, domain, run, rbd, email))
         q.put(t)
-        #check_database.delay(query_rbd.id, run, otp, rbd)
         print("delayed")
         return redirect(f"success/")
     else:
-        return JsonResponse({"error":"Faltan campos en el formulario"}, status=404)
-
+        return JsonResponse({"error": "Faltan campos en el formulario"}, status=404)
