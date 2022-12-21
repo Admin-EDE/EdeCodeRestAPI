@@ -1,0 +1,52 @@
+<!doctype html>
+<title>Formulario de verificación</title>
+<h2>Seleccione el archivo a cargar para el comando: CHECK </h2>
+<form method="post" action="/upload" enctype="multipart/form-data">
+    <dl>
+        <table>
+            <tr>
+                <td>Archivo:</td>
+                <td>
+                    <input type="hidden" name="action" value="check">
+                    <input type="file" name="file" autocomplete="off" required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="run">RUN:</label><br>
+                </td>
+                <td>
+                    <input type="text" name="run" autocomplete="off" required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="otp">OTP:</label><br>
+                </td>
+                <td>
+                    <input type="number" name="otp" pattern="[0-9]{6}" autocomplete="off" required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="rbd">RBD:</label><br>
+                </td>
+                <td>
+                    <input type="number" name="rbd" pattern="[0-9]{1,6}" autocomplete="off" required>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for="email">Email:</label><br>
+                </td>
+                <td>
+                    <input type="email" name="email" autocomplete="off" required>
+                </td>
+            </tr>
+
+		</table>
+    </dl>
+    <p>
+		<input type="submit" value="Submit">
+	</p>
+</form>

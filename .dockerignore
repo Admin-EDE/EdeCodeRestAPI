@@ -1,5 +1,4 @@
 Dockerfile
-claveprivada.pem
 README.md
 *.pyc
 *.pyo

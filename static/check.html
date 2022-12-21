@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<script src="/app/static/js/d3.v4.js"></script>
-<link rel="stylesheet" href="/app/static/css/style.css">
+<script>
+  toreplace_d3_toreplace
+</script>
+<style>
+  toreplace_css_toreplace
+</style>
+<!--<link rel="stylesheet" href="/static/css/style.css">-->
 
 <div id="my_dataviz"></div>
 
@@ -21,10 +26,10 @@
     </tr>
   </tbody>
 </table>
-
-<br><div><img src="/{{folder}}/qrimage.jpg" class="qr-img"></div>
-<div><a href="/{{folder}}/{{file}}" download class="btn_link">Descargar informe técnico</a></div><br><br>
-
+<!--
+<br><div><img src="//qrimage.jpg" class="qr-img"></div>
+<div><a href="/" download class="btn_link">Descargar informe técnico</a></div><br><br>
+-->
 <script>
 // set the dimensions and margins of the graph
 var margin = {top: 10, right: 10, bottom: 10, left: 10},
@@ -41,12 +46,13 @@ var svg = d3.select("#my_dataviz")
       "translate(" + margin.left + "," + margin.top + ")");
 
 // read json data
-d3.json({{json|tojson|safe}},function(data) {
+d3.json(asdf_toreplace_replacing,function(data) {
     if(data) { console.log("<true>",data) }
     else {  
-        data = JSON.parse({{jsonData|tojson|safe}})
+        data = asdf_toreplace_replacing
         console.log("<false>", data)
     }
+    //data = {{tojson|safe}}
   // Give the data to this cluster layout:
   var root = d3.hierarchy(data).sum(function(d){ return d.value}) // Here the size of each leave is given in the 'value' field in input data
 

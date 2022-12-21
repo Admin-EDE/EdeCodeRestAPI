@@ -1,11 +1,17 @@
 #!/bin/bash
-service cron start
 #cron -l 2 -f
+
 if [ -z "$DEBUG" ]
 then
     echo "DEBUG not found"
-    exec gunicorn --config ./gunicorn_config.py controller:app
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    #exec python3 manage.py runserver --noreload 0.0.0.0:8080
+    exec gunicorn --config ./gunicorn_config.py reporteede.wsgi
 else
     echo "DEBUG has the value: $DEBUG"
-    exec gunicorn --config ./gunicorn_config.py controller:app --reload
+    python3 manage.py makemigrations
+    python3 manage.py migrate
+    #exec python3 manage.py runserver 0.0.0.0:8080
+    exec gunicorn --config ./gunicorn_config.py reporteede.wsgi --reload
 fi
